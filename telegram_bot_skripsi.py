@@ -1,20 +1,21 @@
 import telebot
 import mysql.connector
 import os
+import env
 import cv2
 import time
 
 ## Connect to MySQL
 mydb = mysql.connector.connect(
-  host="localhost",
-  user="stainley",
-  database="parking_slot_bot",
-  password=""
+  host=os.getenv('DB_HOST'),
+  user=os.getenv('DB_USER'),
+  database=os.getenv('DB_NAME'),
+  password=os.getenv('DB_PASSWORD')
 )
 
 mycursor = mydb.cursor()
 
-mycursor.execute("SELECT * FROM mspulsa")
+mycursor.execute("SELECT * FROM test_table")
 
 myresult = mycursor.fetchall()
 
