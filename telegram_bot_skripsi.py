@@ -28,7 +28,7 @@ def start(message):
 
 @bot.message_handler(commands=['help'])
 def help(message):
-    bot.reply_to(message, "I support the following commands: \n /start \n /info \n /help \n /status")
+    bot.reply_to(message, "I support the following commands: \n /start \n /info \n /help \n /status \n /check")
 
 @bot.message_handler(commands=['info'])
 def info(message):
