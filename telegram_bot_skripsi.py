@@ -2,7 +2,7 @@ import telebot
 import mysql.connector
 import os
 import env
-from capture_image import captureImage
+import datetime
 
 ## Connect to MySQL
 mydb = mysql.connector.connect(
@@ -14,13 +14,8 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
-mycursor.execute("SELECT * FROM test_table")
-
-myresult = mycursor.fetchall()
-
-for x in myresult:
-  print(x)
-
+## Parking Slot Capacity
+parkingSlotCapacity = 10
 
 ## Connect to Telegram
 API_KEY = "6011272127:AAH9jxZEECcwQfP67yGthwc8Hvrt0OUO5hM"
@@ -43,5 +38,29 @@ def info(message):
 def status(message):
     bot.reply_to(message, "I am up and running.")
     
+@bot.message_handler(commands=['check'])
+def status(message):
+    mycursor.execute("SELECT * FROM used_slot order by timestamp desc")
+    latestData = mycursor.fetchone()
+
+    bot.reply_to(message, "Checking parking slot availability...")
+
+    # check if latest data is exist
+    if latestData is None:
+        bot.reply_to(message, "No data available, please try again later.")
+    else:
+      now = datetime.datetime.now()
+      latestDataUsedSlot = latestData[1]
+      latestDataTimeStamp = latestData[2]
+      diff = round((now - latestDataTimeStamp).total_seconds()/60)
+      if diff > 5:
+          bot.reply_to(message, "Technical error, please try again later.")
+      else:
+          if latestDataUsedSlot == 0:
+              bot.reply_to(message, "Parking slot is empty.")
+          else:
+              availableSlot = parkingSlotCapacity - latestDataUsedSlot
+              bot.reply_to(message, "There are " + str(availableSlot) + " available slot.")
+
 print("Hey, I am up....")
 bot.polling()
