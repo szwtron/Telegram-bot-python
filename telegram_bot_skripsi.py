@@ -2,8 +2,7 @@ import telebot
 import mysql.connector
 import os
 import env
-import cv2
-import time
+from capture_image import captureImage
 
 ## Connect to MySQL
 mydb = mysql.connector.connect(
@@ -21,10 +20,6 @@ myresult = mycursor.fetchall()
 
 for x in myresult:
   print(x)
-
-## Run another python script
-
-
 
 
 ## Connect to Telegram
