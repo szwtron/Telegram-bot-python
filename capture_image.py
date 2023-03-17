@@ -8,6 +8,7 @@ import subprocess
 import json
 import env
 import mysql.connector
+import shutil
 
 mydb = mysql.connector.connect(
   host=os.getenv('DB_HOST'),
@@ -41,8 +42,8 @@ def captureImage():
 
     # Save the frame as an image file with the generated filename
     cv2.imwrite(fileName, frame)
+    deteleOldDetection()
     analyzeImage(fileName, mySQLTimeStamp)
-    
 
     return fileName
 
@@ -70,9 +71,6 @@ def analyzeImage(fileName, mySQLTimeStamp):
     detections = detections.split()
     detections = detections[0]
 
-    # Do something with the detections, for example print them
-    print(detections)
-
     # Save the detections to the database
     saveToDatabase(fileName, detections, mySQLTimeStamp)
     
@@ -88,10 +86,22 @@ def saveToDatabase(fileName, detections, mySQLTimeStamp):
 
     print(mycursor.rowcount, "record inserted.")
 
-captureImage()
+def deteleOldDetection():
+    folder_path = "runs/detect/exp"
+    if os.path.exists(folder_path):
+        try:
+            # Use the shutil module's "rmtree" function to delete the folder and its contents
+            shutil.rmtree(folder_path)
+            print("Folder and its contents deleted successfully.")
+        except OSError as e:
+            print("Error: %s : %s" % (folder_path, e.strerror))
+    else:
+        print("Error: %s does not exist." % folder_path)
 
-# schedule.every(1).minutes.do(captureImage)
+# captureImage()
 
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+schedule.every(1).minutes.do(captureImage)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
