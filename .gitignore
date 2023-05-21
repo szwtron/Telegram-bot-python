@@ -178,3 +178,4 @@ images/
 runs/
 *.pt
 yolov7/
+env.py

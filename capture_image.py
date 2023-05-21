@@ -3,12 +3,11 @@ import os
 import datetime
 import schedule
 import time
-# from yolov7 import detect
 import subprocess
-import json
 import env
 import mysql.connector
 import shutil
+import re
 
 mydb = mysql.connector.connect(
   host=os.getenv('DB_HOST'),
@@ -50,8 +49,8 @@ def captureImage():
 def analyzeImage(fileName, mySQLTimeStamp):
     script_path = "yolov7/detect.py"
     source_path = fileName
-    weights_path = "yolov7/yolov7.pt"
-    python_path = "E:/Anaconda/envs/yolov7-cpu-mode/python.exe"
+    weights_path = "yolov7/runs/train/PKLot.v2-640.yolov7pytorch-tiny/weights/best.pt"
+    python_path = "E:/Anaconda/envs/yolov7-gpu/python.exe"
     img_size = 640
 
     # Construct the command to run
@@ -66,20 +65,24 @@ def analyzeImage(fileName, mySQLTimeStamp):
     print(result.stdout.decode().strip().split("\n"))
 
     # Get the number of detections
+    pattern = r'(\d+)\s+space-emptys'
     numberofDetected = len(output_lines)
     detections = output_lines[numberofDetected - 1]
-    detections = detections.split()
-    detections = detections[0]
+    matches = re.findall(pattern, detections) if detections else []
+
+    freeSpace = 0
+    for match in matches:
+        freeSpace = int(match)
 
     # Save the detections to the database
-    saveToDatabase(fileName, detections, mySQLTimeStamp)
+    saveToDatabase(fileName, freeSpace, mySQLTimeStamp)
     
-def saveToDatabase(fileName, detections, mySQLTimeStamp):
+def saveToDatabase(fileName, freeSpace, mySQLTimeStamp):
     print(mySQLTimeStamp)
     mycursor = mydb.cursor()
 
-    sql = "INSERT INTO used_slot (file_name, used_slot, timestamp) VALUES (%s, %s, %s)"
-    val = (fileName, detections, mySQLTimeStamp)
+    sql = "INSERT INTO free_slot (file_name, free_slot, timestamp) VALUES (%s, %s, %s)"
+    val = (fileName, freeSpace, mySQLTimeStamp)
     mycursor.execute(sql, val)
 
     mydb.commit()
