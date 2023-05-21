@@ -112,11 +112,12 @@ def start_sending_messages(chat_id):
             diff = round((now - latestDataTimeStamp).total_seconds()/60)
             if diff > 5:
                 bot.send_message(chat_id, "Technical error, please try again later.")
+                subscriptions[chat_id] = False
             else:
                 bot.send_message(chat_id, "There are " + str(latestDataFreeSlot) + " available slot.")
         
         mydb.commit()
-        time.sleep(180)  # Sleep for 3 minutes
+        time.sleep(10)  # Sleep for 3 minutes
 
 print("Hey, I am up....")
 bot.polling()
