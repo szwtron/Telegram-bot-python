@@ -117,7 +117,7 @@ def start_sending_messages(chat_id):
                 bot.send_message(chat_id, "There are " + str(latestDataFreeSlot) + " available slot.")
         
         mydb.commit()
-        time.sleep(10)  # Sleep for 3 minutes
+        time.sleep(180)  # Sleep for 3 minutes
 
 print("Hey, I am up....")
 bot.polling()
