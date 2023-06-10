@@ -4,6 +4,10 @@ import mysql.connector
 import os
 import env
 import datetime
+import cv2
+import subprocess
+import shutil
+import re
 
 ## Connect to MySQL
 mydb = mysql.connector.connect(
@@ -118,6 +122,121 @@ def start_sending_messages(chat_id):
         
         mydb.commit()
         time.sleep(180)  # Sleep for 3 minutes
+
+# Global flag variables
+stop_playback = False
+pause_playback = False
+
+# Provide the path to your video file
+video_path = "yolov7/inference/parking_crop.mp4"
+video_paused = False
+current_frame = None
+
+@bot.message_handler(commands=['start_video'])
+def start_video(message):
+    global video_path, video_paused, current_frame
+
+    # Open the video file
+    video = cv2.VideoCapture(video_path)
+
+    while True:
+        # Read a frame from the video
+        ret, frame = video.read()
+
+        # If the frame was not successfully read, exit the loop
+        if not ret:
+            break
+        else:
+            # Store the current frame for analysis
+            current_frame = frame
+
+        # Display the frame in a window called "Video"
+        cv2.imshow('Video', frame)
+
+        # Check if the video is paused
+        if video_paused:
+            while video_paused:
+                pass
+
+        # Wait for 25 milliseconds and check if the user pressed the 'q' key
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
+
+    # Release the video object and close the window
+    video.release()
+
+    cv2.destroyAllWindows()
+
+@bot.message_handler(commands=['pause_video'])
+def pause_video(message):
+    global video_paused
+    video_paused = True
+
+@bot.message_handler(commands=['resume_video'])
+def resume_video(message):
+    global video_paused
+    video_paused = False
+
+@bot.message_handler(commands=['demo_check'])
+def demo_check(message):
+    global current_frame
+    
+    # Check if there is a frame available for analysis
+    if current_frame is not None:
+        # Perform analysis on the current frame
+        save_frame(current_frame)
+        free_space = analyzeFrame()
+    else:
+        print("No frame available for analysis.")
+
+    with open("images/demo/frame.jpg", "rb") as img:
+        bot.send_photo(message.chat.id, img)
+    bot.reply_to(message, "There are " + str(free_space) + " available slot.")
+    if os.path.exists(output_path):
+        # Delete the file
+        os.remove(output_path)
+        print("Image deleted:", output_path)
+    else:
+        print("Image not found:", output_path)
+
+def save_frame(frame):
+    global output_path
+    cv2.imwrite(output_path, frame)
+    print("Frame saved as", output_path)
+
+def analyzeFrame():
+    global output_path
+    script_path = "yolov7/detect.py"
+    source_path = output_path
+    weights_path = "yolov7/runs/train/yolov7-yolov7-PKLOTv2.v1-v2.yolov7pytorch2/weights/best.pt"
+    python_path = "E:/Anaconda/envs/yolov7-gpu/python.exe"
+    img_size = 640
+
+    # Construct the command to run
+    command = f"{python_path} {script_path} --source {source_path} --weights {weights_path} --img-size {img_size}"
+
+    # Run the command and capture the output
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # Parse the detections from the output
+    output_lines = result.stdout.decode().strip().split("\n")
+    print(result.stderr.decode() + '\n')
+    print(result.stdout.decode().strip().split("\n"))
+
+    # Get the number of detections
+    pattern = r'(\d+)\s+Free'
+    numberofDetected = len(output_lines)
+    detections = output_lines[numberofDetected - 1]
+    matches = re.findall(pattern, detections) if detections else []
+
+    freeSpace = 0
+    for match in matches:
+        freeSpace = int(match)
+
+    return freeSpace
+
+# Provide the output path for saving the frame as an image
+output_path = f'images/demo/frame.jpg'
 
 print("Hey, I am up....")
 bot.polling()

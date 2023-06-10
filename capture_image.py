@@ -65,7 +65,7 @@ def analyzeImage(fileName, mySQLTimeStamp):
     print(result.stdout.decode().strip().split("\n"))
 
     # Get the number of detections
-    pattern = r'(\d+)\s+space-emptys'
+    pattern = r'(\d+)\s+Free'
     numberofDetected = len(output_lines)
     detections = output_lines[numberofDetected - 1]
     matches = re.findall(pattern, detections) if detections else []
