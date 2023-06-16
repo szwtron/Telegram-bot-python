@@ -36,8 +36,9 @@ def captureImage():
     # Generate a filename based on the current timestamp
     timeStamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     mySQLTimeStamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    location = os.getenv('LOCATION')
 
-    fileName = f'images/image_{timeStamp}.jpg'
+    fileName = f'images/{location}|{timeStamp}.jpg'
 
     # Save the frame as an image file with the generated filename
     cv2.imwrite(fileName, frame)

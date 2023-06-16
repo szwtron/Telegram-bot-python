@@ -60,14 +60,17 @@ def check(message):
     if latestData is None:
         bot.reply_to(message, "No data available, please try again later.")
     else:
+      pattern = r"/(.*?)\|"
       now = datetime.datetime.now()
+
+      location = re.search(pattern, latestData[0]).group(1)
       latestDataFreeSlot = latestData[1]
       latestDataTimeStamp = latestData[2]
       diff = round((now - latestDataTimeStamp).total_seconds()/60)
       if diff > 5:
         bot.reply_to(message, "Technical error, please try again later.")
       else:
-        bot.reply_to(message, "There are " + str(latestDataFreeSlot) + " available slot.")
+        bot.reply_to(message, "There are " + str(latestDataFreeSlot) + " available slot at " + str(location))
     
     mydb.commit()
 
@@ -110,7 +113,10 @@ def start_sending_messages(chat_id):
         if latestData is None:
             bot.send_message(chat_id, "No data available, please try again later.")
         else:
+            pattern = r"/(.*?)\|"
             now = datetime.datetime.now()
+            
+            location = re.search(pattern, latestData[0]).group(1)
             latestDataFreeSlot = latestData[1]
             latestDataTimeStamp = latestData[2]
             diff = round((now - latestDataTimeStamp).total_seconds()/60)
@@ -118,7 +124,7 @@ def start_sending_messages(chat_id):
                 bot.send_message(chat_id, "Technical error, please try again later.")
                 subscriptions[chat_id] = False
             else:
-                bot.send_message(chat_id, "There are " + str(latestDataFreeSlot) + " available slot.")
+                bot.send_message(chat_id, "There are " + str(latestDataFreeSlot) + " available slot at " + str(location))
         
         mydb.commit()
         time.sleep(180)  # Sleep for 3 minutes
@@ -128,7 +134,7 @@ stop_playback = False
 pause_playback = False
 
 # Provide the path to your video file
-video_path = "yolov7/inference/parking_crop.mp4"
+video_path = "yolov7/inference/footage_skripsi.mp4"
 video_paused = False
 current_frame = None
 
