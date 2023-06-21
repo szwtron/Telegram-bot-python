@@ -134,7 +134,7 @@ stop_playback = False
 pause_playback = False
 
 # Provide the path to your video file
-video_path = "yolov7/inference/footage_skripsi.mp4"
+video_path = os.getenv('YOLOV7_TEST_VIDEO_PATH')
 video_paused = False
 current_frame = None
 
@@ -212,10 +212,10 @@ def save_frame(frame):
 
 def analyzeFrame():
     global output_path
-    script_path = "yolov7/detect.py"
+    script_path = os.getenv('YOLOV7_DETECT_PATH')
     source_path = output_path
-    weights_path = "yolov7/runs/train/yolov7-yolov7-PKLOTv2.v1-v2.yolov7pytorch2/weights/best.pt"
-    python_path = "E:/Anaconda/envs/yolov7-gpu/python.exe"
+    weights_path = os.getenv('YOLOV7_WEIGHT_PATH')
+    python_path = os.getenv('PYTHON_PATH')
     img_size = 640
 
     # Construct the command to run

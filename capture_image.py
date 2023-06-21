@@ -48,10 +48,10 @@ def captureImage():
     return fileName
 
 def analyzeImage(fileName, mySQLTimeStamp):
-    script_path = "yolov7/detect.py"
+    script_path = os.getenv('YOLOV7_DETECT_PATH')
     source_path = fileName
-    weights_path = "yolov7/runs/train/PKLot.v2-640.yolov7pytorch-tiny/weights/best.pt"
-    python_path = "E:/Anaconda/envs/yolov7-gpu/python.exe"
+    weights_path = os.getenv('YOLOV7_WEIGHT_PATH')
+    python_path = os.getenv('PYTHON_PATH')
     img_size = 640
 
     # Construct the command to run
